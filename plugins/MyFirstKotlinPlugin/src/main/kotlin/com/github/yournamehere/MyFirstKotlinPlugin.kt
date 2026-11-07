@@ -2,14 +2,15 @@ package com.github.yournamehere
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.net.Uri
 import android.view.GestureDetector
 import android.view.MotionEvent
 import androidx.recyclerview.widget.RecyclerView
+import com.aliucord.Http
 import com.aliucord.Utils
 import com.aliucord.annotations.AliucordPlugin
 import com.aliucord.entities.Plugin
 import com.aliucord.patcher.after
-import com.discord.utilities.rest.RestAPI
 import com.discord.widgets.chat.list.adapter.WidgetChatListAdapterItemMessage
 import com.discord.widgets.chat.list.entries.ChatListEntry
 import com.discord.widgets.chat.list.entries.MessageEntry
@@ -59,7 +60,11 @@ class MyFirstKotlinPlugin : Plugin() {
     private fun react(channelId: Long, messageId: Long) {
         Utils.threadPool.execute {
             try {
-                RestAPI.api.addReaction(channelId, messageId, emoji).subscribe()
+                val encoded = Uri.encode(emoji)
+                Http.Request.newDiscordRNRequest(
+                    "/channels/$channelId/messages/$messageId/reactions/$encoded/@me",
+                    "PUT",
+                ).execute()
             } catch (e: Throwable) {
                 logger.error("Failed to add reaction", e)
             }
